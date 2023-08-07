@@ -1,4 +1,4 @@
-import 'package:calculator1/buttons.dart';
+import 'package:getting_started/buttons.dart';
 import 'package:flutter/material.dart';
 
 void main() {
