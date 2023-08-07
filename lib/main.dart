@@ -1,127 +1,238 @@
+import 'package:calculator1/buttons.dart';
 import 'package:flutter/material.dart';
 
-//import 'package:flutter/material.dart';
-
-class Product {
-  const Product({required this.name});
-
-  final String name;
+void main() {
+  runApp(const MyApp());
 }
 
-typedef CartChangedCallback = Function(Product product, bool inCart);
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-class ShoppingListItem extends StatelessWidget {
-  ShoppingListItem({
-    required this.product,
-    required this.inCart,
-    required this.onCartChanged,
-  }) : super(key: ObjectKey(product));
-
-  final Product product;
-  final bool inCart;
-  final CartChangedCallback onCartChanged;
-
-  Color _getColor(BuildContext context) {
-    // The theme depends on the BuildContext because different
-    // parts of the tree can have different themes.
-    // The BuildContext indicates where the build is
-    // taking place and therefore which theme to use.
-
-    return inCart //
-        ? Colors.black54
-        : Theme.of(context).primaryColor;
-  }
-
-  TextStyle? _getTextStyle(BuildContext context) {
-    if (!inCart) return null;
-
-    return const TextStyle(
-      color: Colors.black54,
-      decoration: TextDecoration.lineThrough,
-    );
-  }
-
+// This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () {
-        onCartChanged(product, inCart);
-      },
-      leading: CircleAvatar(
-        backgroundColor: _getColor(context),
-        child: Text(product.name[0]),
-      ),
-      title: Text(
-        product.name,
-        style: _getTextStyle(context),
-      ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: MyHomePage(),
     );
   }
 }
 
-class ShoppingList extends StatefulWidget {
-  const ShoppingList({required this.products, super.key});
-
-  final List<Product> products;
-
-  // The framework calls createState the first time
-  // a widget appears at a given location in the tree.
-  // If the parent rebuilds and uses the same type of
-  // widget (with the same key), the framework re-uses
-  // the State object instead of creating a new State object.
-
+class MyHomePage extends StatefulWidget {
   @override
-  State<ShoppingList> createState() => _ShoppingListState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _ShoppingListState extends State<ShoppingList> {
-  final _shoppingCart = <Product>{};
-
-  void _handleCartChanged(Product product, bool inCart) {
-    setState(() {
-      // When a user changes what's in the cart, you need
-      // to change _shoppingCart inside a setState call to
-      // trigger a rebuild.
-      // The framework then calls build, below,
-      // which updates the visual appearance of the app.
-
-      if (!inCart) {
-        _shoppingCart.add(product);
-      } else {
-        _shoppingCart.remove(product);
-      }
-    });
-  }
+class _MyHomePageState extends State<MyHomePage> {
+  final List<String> buttons = [
+    'C', 'DEL', '%', '/',
+    '9', '8', '7', '*',
+    '6', '5', '4', '-',
+    '3', '2', '1', '+',
+    '0', '.', 'ANS', '=',
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Shopping List'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        children: widget.products.map((product) {
-          return ShoppingListItem(
-            product: product,
-            inCart: _shoppingCart.contains(product),
-            onCartChanged: _handleCartChanged,
-          );
-        }).toList(),
+      backgroundColor: Colors.deepOrangeAccent[100],
+      body:
+
+      Column(
+        children: <Widget>[
+
+          Expanded(
+            child:  TextButton(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return HomeScreen();
+                }));
+              },
+              child: const Text('Go to: KM-MILE CONVERTER'),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+
+
+            child: Container(
+              child: GridView.builder(
+                  itemCount: buttons.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4),
+                  itemBuilder: (BuildContext context, int index) {
+                    return MyButton(
+                      buttonText: buttons[index],
+                      color: Colors.deepPurple,
+                      textColor: Colors.white,
+                    );
+                  }),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-void main() {
-  runApp(const MaterialApp(
-    title: 'Shopping App',
-    home: ShoppingList(
-      products: [
-        Product(name: 'Eggs'),
-        Product(name: 'Flour'),
-        Product(name: 'Chocolate chips'),
-      ],
-    ),
-  ));
+
+// KILOMETER - MILE CONVERTER
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final TextStyle labelStyle = TextStyle(
+    color: Colors.blue,
+    fontSize: 20.0,
+  );
+  final TextStyle resultSyle = TextStyle(
+    color: Colors.red,
+    fontSize: 30.0,
+    fontWeight: FontWeight.w700,
+  );
+
+  final List<String> _measures = ['Kilometers', 'Miles'];
+
+  double _value = 1.0;
+  String _fromMeasures = 'Kilometers';
+  String _toMeasures = 'Miles';
+  String _results = "";
+
+  final Map<String, int> _measuresMap = {
+    'Kilometers': 0,
+    'Miles': 1,
+  };
+
+  dynamic _conversionMultipliers = {
+    '0': [1, 0.621371],
+    '1': [1.60934, 1],
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body:
+       Padding(
+        padding: const EdgeInsets.all(15.0),
+        child:
+
+        Column(
+          children: [
+        Center(
+        child: TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+         child: const Text('Go to: CALCULATOR'),
+       ),),
+
+            //  INPUT VALUE
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Enter the value of unit you wish to convert from:',
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _value = double.parse(value);
+                });
+              },
+            ),
+            SizedBox(height: 30.0),
+
+            //  CONVERTING UNITS
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      'FROM',
+                      style: labelStyle,
+                    ),
+                    DropdownButton(
+                      items: _measures
+                          .map((String value) => DropdownMenuItem<String>(
+                        child: Text(value),
+                        value: value,
+                      ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _fromMeasures = value!;
+                        });
+                      },
+                      value: _fromMeasures,
+                    )
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text('TO', style: labelStyle),
+                    DropdownButton(
+                      items: _measures
+                          .map((String value) => DropdownMenuItem<String>(
+                        child: Text(value),
+                        value: value,
+                      ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _toMeasures = value!;
+                        });
+                      },
+                      value: _toMeasures,
+                    )
+                  ],
+                ),
+              ],
+            ),
+
+            // CONVERTING
+            MaterialButton(
+              minWidth: double.infinity,
+              onPressed: _convert,
+              child: Text(
+                'CONVERT',
+                style: TextStyle(color: Colors.white),
+              ),
+              color: Theme.of(context).primaryColor,
+            ),
+            SizedBox(height: 25.0),
+            Text(
+              _results,
+              style: resultSyle,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Conversion and Display
+  void _convert() {
+    print('Button Pressed');
+    print(_value);
+
+    if (_value != 0 && _fromMeasures.isNotEmpty && _toMeasures.isNotEmpty) {
+      int from = _measuresMap[_fromMeasures]!;
+      int to = _measuresMap[_toMeasures]!;
+
+      var multiplier = _conversionMultipliers[from.toString()][to];
+
+      setState(() {
+        _results =
+        "$_value $_fromMeasures = ${_value * multiplier} $_toMeasures";
+      });
+    } else {
+      setState(() {
+        _results = "Please enter an integer";
+      });
+    }
+  }
 }
